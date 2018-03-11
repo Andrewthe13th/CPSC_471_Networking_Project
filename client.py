@@ -6,35 +6,34 @@ __license__ = "Public Domain"
 __version__ = "1.0"
 
 import argparse
-from socket import *
-
+import socket
+import sys
 
 parser = argparse.ArgumentParser(description="FTP client side")
 parser.add_argument("server_name", help='Web address of server')
 parser.add_argument("port",  help="server port you wish to connecct to")
 args = parser.parse_args()
 
-
-# Name and port number of the server to
- # which want to conne ct .
 server_name = args.server_name
-serverPort= args.port
+server_port= args.port
 
-# Create a socket
-client_socket = socket(AF_INET , SOCK_STREAM)
+if server_port.isdigit():
+    server_port = int(server_port)
+else:
+    print("The port {} is in the wrong format".format(server_port))
+    sys.exit()
 
-#Connect to the server
-clientSocket.connect((serverName,serverPort))
 
-#A string we want to send to the server
-data = 'Hello world! This is a very long string.'
-bytes_sent = 0
+client_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+client_socket.connect((server_name,server_port))
 
-#Keep send in gbytes until all bytes are sent
-while bytes_sent != len(data):
-    pass
-    #Send thatstring!
-    bytes_sent += clientSocket.send(data[bytesSent:])
 
-#Close the socket
-clientSocket.close()
+#data = 'Hello world! This is a very long string.'
+#bytes_sent = 0
+
+
+#while bytes_sent != len(data):
+#    pass
+#    bytes_sent += client_socket.send(data[bytesSent:])
+
+client_socket.close()
