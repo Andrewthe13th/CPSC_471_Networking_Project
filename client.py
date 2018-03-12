@@ -11,7 +11,7 @@ import sys
 from cmd import Cmd
 #import subprocess
 
-class ftp_Command(Cmd):
+class ftp_command(Cmd):
 
     def do_hello(self, args): #command examples
         """Says hello. If you provide a name, it will greet you with it."""
@@ -29,8 +29,8 @@ class ftp_Command(Cmd):
     def do_put(self, args):
         pass
 
-    #TODO Using the command channel get the ls from the server
-    def do_ls(self, args):
+    #TODO: FINISHED NEEDS TESTING
+    def do_ks(self, args):
         if len(args) == 0:
             msg = 'ls'
             client_socket.send(msg)
@@ -41,7 +41,13 @@ class ftp_Command(Cmd):
     
     #TODO close all remaining sockets and close the clients connection. Check for active DL/upload connections?
     def do_quit(self, args):
-        pass
+        if len(args) == 0:
+            msg = 'quit'
+            client_socket.send(msg)
+            print(client_socket.recv(1024))
+            return True
+        else:
+            print("quit takes no arguments")
 
 parser = argparse.ArgumentParser(description="FTP client side")
 parser.add_argument("server_name", help='Web address of server')
@@ -63,7 +69,7 @@ try:
     print("Connecting to server")
     client_socket.connect((server_name,server_port))
     print("Setting up FTP commands")
-    prompt = ftp_Command()
+    prompt = ftp_command()
     prompt.prompt = 'ftp> '
     prompt.cmdloop('FTP connection established')
 except socket.error as socketerror:
@@ -83,3 +89,4 @@ except socket.error as socketerror:
 #    bytes_sent += client_socket.send(data[bytesSent:])
 
 client_socket.close()
+print("Command Socket Closed")

