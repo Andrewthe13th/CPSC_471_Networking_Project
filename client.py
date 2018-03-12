@@ -8,6 +8,22 @@ __version__ = "1.0"
 import argparse
 import socket
 import sys
+from cmd import Cmd
+
+
+class ftp_Command(Cmd):
+
+    def do_hello(self, args): #command examples
+        """Says hello. If you provide a name, it will greet you with it."""
+        if len(args) == 0:
+            name = 'stranger'
+        else:
+            name = args
+        print (name)
+
+    def do_quit(self, args):
+        """Quits the program."""
+        raise SystemExit
 
 parser = argparse.ArgumentParser(description="FTP client side")
 parser.add_argument("server_name", help='Web address of server')
@@ -23,9 +39,21 @@ else:
     print("The port {} is in the wrong format".format(server_port))
     sys.exit()
 
+try:
+    print("Creating socket")
+    client_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+    print("Connecting to server")
+    client_socket.connect((server_name,server_port))
+    print("Setting up FTP commands")
+    prompt = ftp_Command()
+    prompt.prompt = 'ftp> '
+    prompt.cmdloop('FTP connection established')
+except socket.error as socketerror:
+    print("Error: ", socketerror)
 
-client_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
-client_socket.connect((server_name,server_port))
+
+
+
 
 
 #data = 'Hello world! This is a very long string.'

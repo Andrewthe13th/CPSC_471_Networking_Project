@@ -27,12 +27,13 @@ server_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
 server_socket.bind(('',server_port))
 
 server_socket.listen(1)
-print ('The serverisready to receive')
-
+print ('The server is ready to receive')
+connection_socket ,addr = server_socket.accept()
+print ('Connected by', addr)
 data =''
 while 1:
     print("waiting")
-    connection_socket ,addr = server_socket.accept()
+
     tmpBuff= ''
 
     while len(data) != 40:
