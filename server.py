@@ -8,6 +8,7 @@ __version__ = "1.0"
 import argparse
 import socket
 import sys
+import subprocess
 
 parser = argparse.ArgumentParser(description="FTP server side")
 parser.add_argument("port",  help="server port you wish to listen on")
@@ -32,16 +33,23 @@ connection_socket ,addr = server_socket.accept()
 print ('Connected by', addr)
 data =''
 while 1:
-    print("waiting")
-
-    tmpBuff= ''
-
-    while len(data) != 40:
-        tmpBuff = connection_socket.recv(40)
-        if not tmpBuff :
-            break
-        data += tmpBuff
-print (data)
-
+    try:
+        exec_code = connection_socket.recv(1024)
+        if exec_code == "ls":
+            proc = subprocess.Popen(exec_code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
+            stdout_value = proc.stdout.read() + proc.stderr.read()
+            connection_socket.send(stdout_value)
+    except:
+            pass
+#    print("waiting")
+#
+#    tmpBuff= ''
+#
+#    while len(data) != 40:
+#        tmpBuff = connection_socket.recv(40)
+#        if not tmpBuff :
+#            break
+#        data += tmpBuff
+#print (data)
 connection_socket.close()
 print("socket closed")

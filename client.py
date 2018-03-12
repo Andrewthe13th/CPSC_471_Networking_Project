@@ -9,7 +9,7 @@ import argparse
 import socket
 import sys
 from cmd import Cmd
-
+#import subprocess
 
 class ftp_Command(Cmd):
 
@@ -20,10 +20,28 @@ class ftp_Command(Cmd):
         else:
             name = args
         print (name)
+        
+    #TODO: Open a new socket, DL file, close socket    
+    def do_get(self, args):
+        pass
+    
+    #TODO Open a new socket, Upload file, close socket
+    def do_put(self, args):
+        pass
 
+    #TODO Using the command channel get the ls from the server
+    def do_ls(self, args):
+        if len(args) == 0:
+            msg = 'ls'
+            client_socket.send(msg)
+            print(client_socket.recv(1024))
+            
+        else:
+            print("ls does not take arguments")
+    
+    #TODO close all remaining sockets and close the clients connection. Check for active DL/upload connections?
     def do_quit(self, args):
-        """Quits the program."""
-        raise SystemExit
+        pass
 
 parser = argparse.ArgumentParser(description="FTP client side")
 parser.add_argument("server_name", help='Web address of server')
