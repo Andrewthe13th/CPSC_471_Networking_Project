@@ -10,6 +10,15 @@ import socket
 import sys
 import subprocess
 
+#TODO: WILL REPLACE CLIENT_SOCKET.SEND TO OUR OWN FORMAT
+def send_data(self):
+    pass
+
+
+#TODO: Will REPLACE CLIENT_SOCKET.RCV TO OUR OWN FORMAT
+def rec_data(self):
+    pass
+
 parser = argparse.ArgumentParser(description="FTP server side")
 parser.add_argument("port",  help="server port you wish to listen on")
 args = parser.parse_args()
@@ -21,7 +30,6 @@ if server_port.isdigit():
 else:
     print("The port {} is in the wrong format".format(server_port))
     sys.exit()
-
 
 server_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
 
@@ -35,10 +43,11 @@ data =''
 while 1:
     try:
         exec_code = connection_socket.recv(1024)
+        exec_code = exec_code.decode() 
         if exec_code == "ls":
             proc = subprocess.Popen(exec_code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
             stdout_value = proc.stdout.read() + proc.stderr.read()
-            connection_socket.send(stdout_value)
+            send_data(stdout_value)
         if exec_code == "quit":
             break
         #if exec_code == "get":
