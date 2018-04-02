@@ -8,16 +8,40 @@ __version__ = "1.0"
 import argparse
 import socket
 import sys
-import subprocess
+#import subprocess
+import commands
 
-#TODO: WILL REPLACE CLIENT_SOCKET.SEND TO OUR OWN FORMAT
-def send_data(self):
-    pass
+def send_data(data):
+    data_size = str(len(data))
 
+    while len(data_size) < 10:
+        data_size = "0" + data_size
+        
+    data = data_size + data
+    data_sent = 0
+    while data_sent != len(data):
+        data_sent += connection_socket.send(data[data_sent:])
+        
+def recvAll(sock, numBytes):
+	recvBuff = ""
+	tmpBuff = ""
+	while len(recvBuff) < numBytes:
+		tmpBuff =  sock.recv(numBytes)
+		# The other side has closed the socket
+		if not tmpBuff:
+			break
+		recvBuff += tmpBuff
+	return recvBuff
+    
+def recv(sock):
+    data = ""
+    file_size = 0	
+    file_size_buff = ""
+    file_size_buff = recvAll(sock, 10)
+    file_size = int(file_size_buff)
+    data = recvAll(sock, file_size)
+    return data
 
-#TODO: Will REPLACE CLIENT_SOCKET.RCV TO OUR OWN FORMAT
-def rec_data(self):
-    pass
 
 parser = argparse.ArgumentParser(description="FTP server side")
 parser.add_argument("port",  help="server port you wish to listen on")
@@ -31,6 +55,7 @@ else:
     print("The port {} is in the wrong format".format(server_port))
     sys.exit()
 
+
 server_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
 
 server_socket.bind(('',server_port))
@@ -42,38 +67,30 @@ print ('Connected by', addr)
 data =''
 while 1:
     try:
-        exec_code = connection_socket.recv(1024)
-        exec_code = exec_code.decode() 
+        exec_code = recv(connection_socket)
         if exec_code == "ls":
-            proc = subprocess.Popen(exec_code, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            stdout_value = proc.stdout.read() + proc.stderr.read()
-            send_data(stdout_value)
+            tmp = ""
+            for line in commands.getoutput('ls'):
+                tmp += line
+            send_data(tmp)
         if exec_code == "quit":
             break
-        #if exec_code == "get":
-         #   tmp_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
-          #  tmp_socket.bind(('',0))
-           # print(tmp_socket.getsockname())
-            #connection_socket.send(tmp_socket.getsockname())
+        if exec_code == "get":
+            tmp_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
+            tmp_socket.bind(('',0))
+            print(tmp_socket.getsockname()[1])
+            socket_number = tmp_socket.getsockname()[1]
+            send_data(socket_number)
+            print("port sent")
             #while 1:
              #   try:
               #      tmp_cmd = tmp_socket.recv(1024)
                #     if tmp_cmd == 'close':
                 #        tmp_socket.close()
                  #       print("Download Socket Closed")
-                #except:
-                 #   pass
+               # except:
+                #    pass
     except:
         pass
-#    print("waiting")
-#
-#    tmpBuff= ''
-#
-#    while len(data) != 40:
-#        tmpBuff = connection_socket.recv(40)
-#        if not tmpBuff :
-#            break
-#        data += tmpBuff
-#print (data)
 connection_socket.close()
 print("Command Socket Closed")

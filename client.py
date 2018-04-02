@@ -10,46 +10,89 @@ import socket
 import sys
 from cmd import Cmd
 
-#from Crypto.Cipher import AES
-#def encrypt(self):
-    #key = 'This is a key123'
-    #obj = AES.new(key, AES.MODE_CBC, 'This is an IV456')
-    #message = "The answer is no"
-    #ciphertext = obj.encrypt(message)
-    #return ciphertext
 
-#def decrypt(self):
-    #ciphertext = self
-    #key = 'This is a key123'
-    #obj2 = AES.new(key, AES.MODE_CBC, 'This is an IV456')
-    #plaintext = obj2.decrypt(ciphertext)
-    #plaintext = plaintext.decode()
 
 #TODO: WILL REPLACE CLIENT_SOCKET.SEND TO OUR OWN FORMAT
-def send_data(self):
-    pass
+def send_data(data):
+    data_size = str(len(data))
+
+    while len(data_size) < 10:
+        data_size = "0" + data_size
+    
+    data = data_size + data
+    
+    data_sent = 0
+    while data_sent != len(data):
+        data_sent += client_socket.send(data[data_sent:])
+    
 
 #TODO: Will REPLACE CLIENT_SOCKET.RCV TO OUR OWN FORMAT
-def rec_data(self):
-    pass
-
-class ftp_command(Cmd):   
+def recvAll(sock, numBytes):
+    recvBuff = ""
+    tmpBuff = ""
+    while len(recvBuff) < numBytes:
+        tmpBuff =  sock.recv(numBytes)
+        # The other side has closed the socket
+        if not tmpBuff:
+            break
+        recvBuff += tmpBuff
+    return recvBuff
     
-#TODO: PAUL IS STILL WORKING ON THIS, MAKING CONNECTIONG AND DL FILE
+def recv(sock):
+    data = ""
+    file_size = 0	
+    file_size_buff = ""
+    file_size_buff = recvAll(sock, 10)
+    file_size = int(file_size_buff)
+    data = recvAll(sock, file_size)
+    return data
+    
+class ftp_command(Cmd):
+    #TODO: PAUL IS STILL WORKING ON THIS, MAKING CONNECTIONG AND DL FILE
     def do_get(self, args):
-        pass
+        if len(args) > 0:
+            msg = 'get'
+            send_data(msg)
+            tmp_port = client_socket.recv(10)
+            print(tmp_port)
+            try:
+                print("Creating socket for download")
+                tmp_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+                tmp_socket.connect((server_name,tmp_port))
+                #TODO DOWNLOAD FILE
+                #TODO CHECK FILE HASH
+                print("File download is complete")
+                tmp_socket.send("close")
+                print("Socket for download is closed")
+                tmp_socket.close()
+                
+                
+                
+            except socket.error as socketerror:
+                print("Error: ", socketerror)
+            
+        else:
+            print("get needs the name of the file you are trying to download")
 
 
-
-#TODO OPEN A NEW SOCKET, UPLOAD FILES AND CLOSE SOCKET WHEN DONE
+    #TODO OPEN A NEW SOCKET, UPLOAD FILES AND CLOSE SOCKET WHEN DONE
     def do_put(self, args):
         pass
-    
-#TODO: FINISHED NEEDS TESTING
+        
+    #TODO: FINISHED NEEDS TESTING
     def do_ls(self, args):
         if len(args) == 0:
-            msg = "ls"
+            msg = 'ls'
             send_data(msg)
+            tmp = ""
+            while 1:
+                #WARNING infinite loop
+                tmp = recv(client_socket)
+                if not tmp:
+                    break
+                print (tmp)
+                
+            
         else:
             print("ls does not take arguments")
     
@@ -58,6 +101,8 @@ class ftp_command(Cmd):
         if len(args) == 0:
             msg = 'quit'
             send_data(msg)
+            print(client_socket.recv(1024))
+            return True
         else:
             print("quit takes no arguments")
 
@@ -74,6 +119,7 @@ if server_port.isdigit():
 else:
     print("The port {} is in the wrong format".format(server_port))
     sys.exit()
+
 try:
     print("Creating socket")
     client_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
@@ -85,13 +131,6 @@ try:
     prompt.cmdloop('FTP connection established')
 except socket.error as socketerror:
     print("Error: ", socketerror)
-
-#data = 'Hello world! This is a very long string.'
-#bytes_sent = 0
-
-#while bytes_sent != len(data):
-#    pass
-#    bytes_sent += client_socket.send(data[bytesSent:])
 
 client_socket.close()
 print("Command Socket Closed")
