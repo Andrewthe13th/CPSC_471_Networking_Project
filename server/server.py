@@ -9,6 +9,7 @@ import argparse
 import socket
 import sys
 import commands
+import os
 
 def send_data(sock, data):
     data_size = str(len(data))
@@ -76,8 +77,10 @@ while 1:
                 tmp += line
             send_data(data_socket, tmp)
             data_socket.close()
+            
         if exec_code == "quit":
             break
+            
         if exec_code == "get":
             data_socket = data_connection()
             file_name = recv(data_socket)
@@ -94,7 +97,32 @@ while 1:
                 finally:
                     data_socket.close()
                     file.close()
-
+                    
+        if exec_code == "put":
+            data_socket = data_connection()
+            file_name = recv(data_socket)
+            try:
+                if os.path.exists(file_name):
+                    i = 1
+                    num = "(" + str(i) + ")"
+                    f_name, f_extension = os.path.splitext(file_name)
+                    tmp = f_name
+                    file_name = tmp + num + f_extension
+                    while os.path.exists(file_name):
+                        i += 1
+                        num = "(" + str(i) + ")"
+                        file_name = tmp + num + f_extension
+                file = open(file_name, "w+")
+                while 1:
+                    tmp = recv(data_socket)
+                    if not tmp:
+                        break
+                    file.write(tmp)
+                file.close()
+                print("File download is complete")
+            except socket.error as socketerror:
+                print("Error: ", socketerror)
+            data_socket.close()
     except:
         pass
 connection_socket.close()

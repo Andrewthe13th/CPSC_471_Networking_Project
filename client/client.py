@@ -44,7 +44,6 @@ def recv(sock):
     return data
     
 class ftp_command(Cmd):
-    #TODO: PAUL IS STILL WORKING ON THIS, MAKING CONNECTIONG AND DL FILE
     def do_get(self, args):
         if len(args) > 0:
             msg = 'get'
@@ -73,9 +72,6 @@ class ftp_command(Cmd):
                     tmp = recv(data_socket)
                     if not tmp:
                         break
-                    #use python to create a new file
-                    #save bytes to file
-
                     file.write(tmp)
                 file.close()
                 #TODO CHECK FILE HASH
@@ -85,10 +81,34 @@ class ftp_command(Cmd):
             
         else:
             print("get needs the name of the file you are trying to download")
-    #TODO OPEN A NEW SOCKET, UPLOAD FILES AND CLOSE SOCKET WHEN DONE
     def do_put(self, args):
-        pass
-    #TODO: FINISHED NEEDS TESTING
+       if len(args) > 0:
+            msg = 'put'
+            filename = args
+            send_data(client_socket, msg)
+            tmp_port = int(recv(client_socket))
+            try:
+                data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                data_socket.connect((server_name,tmp_port))
+                send_data(data_socket, filename)
+                print("connection complete")
+                while 1:
+                    try:
+                        file = open(filename, "r")
+                    except:
+                        print("problem opening the file", filename)
+                    try:
+                        byte = file.read(1)
+                        while byte != "":
+                            send_data(data_socket, byte)
+                            byte = file.read(1)
+                    finally:
+                        file.close()
+                        break
+            except socket.error as socketerror:
+                print("Error: ", socketerror)
+
+       
     def do_ls(self, args):
         if len(args) == 0:
             msg = 'ls'
@@ -105,7 +125,6 @@ class ftp_command(Cmd):
         else:
             print("ls does not take arguments")
     
-    #TODO FINISHED NEEDS TESTING
     def do_quit(self, args):
         if len(args) == 0:
             msg = 'quit'
@@ -119,7 +138,6 @@ parser = argparse.ArgumentParser(description="FTP client side")
 parser.add_argument("server_name", help='Web address of server')
 parser.add_argument("port",  help="server port you wish to connecct to")
 args = parser.parse_args()
-
 server_name = args.server_name
 server_port= args.port
 
@@ -139,7 +157,7 @@ try:
     prompt.prompt = 'ftp> '
     prompt.cmdloop('FTP connection established')
 except socket.error as socketerror:
-    print("Error: ", socketerror)
+    print("FTP error: ", socketerror)
 
 client_socket.close()
 print("Command Socket Closed")
