@@ -12,6 +12,20 @@ from cmd import Cmd
 import os
 
 def send_data(sock, data):
+    """
+    Funtion formats the header to the message
+    and sends the data.
+
+    Args:
+        param1: Name of the socket to use.
+        param2: The information to be sent.
+
+    Returns:
+        TNothing.
+
+    Raises:
+        KeyError: None.
+    """
     data_size = str(len(data))
     while len(data_size) < 10:
         data_size = "0" + data_size
@@ -21,6 +35,19 @@ def send_data(sock, data):
         data_sent += sock.send(data[data_sent:])
     
 def recvAll(sock, numBytes):
+    """
+    Function receives the data from a socket.
+
+    Args:
+        param1: Name of the socket to use.
+        param2: The length of data to be received.
+
+    Returns:
+        The data received.
+
+    Raises:
+        KeyError: None.
+    """
     recvBuff = ""
     tmpBuff = ""
     while len(recvBuff) < numBytes:
@@ -32,6 +59,20 @@ def recvAll(sock, numBytes):
     return recvBuff
     
 def recv(sock):
+    """
+    Fuction receives receives header information before
+    calling recvAll() to handle the data of the message. Passes
+    any header information needed to receive the message to recvAll()
+
+    Args:
+        param1: Name of the socket to use.
+
+    Returns:
+        The full message received.
+
+    Raises:
+        KeyError: None.
+    """
     data = ""
     file_size = 0	
     file_size_buff = ""
@@ -44,7 +85,31 @@ def recv(sock):
     return data
     
 class ftp_command(Cmd):
+    """
+    Class that sets up the FTP>> line and handles
+    the commands for all functions for the FTP program
+
+    Args:
+        param1: Command line instructions
+    """
+    
     def do_get(self, args):
+        """
+        Function tells the server to send a file.
+        File name is given on the command line
+
+        Args:
+            param1: The name of the file
+
+        Returns:
+            Nothing.
+
+        Raises:
+            KeyError: Throws an error if there is a problem connecting
+                        to the new data socket.
+                        Throws an error if function is called with no
+                        file name given.
+        """
         if len(args) > 0:
             msg = 'get'
             filename = args
@@ -82,7 +147,24 @@ class ftp_command(Cmd):
         else:
             print("get needs the name of the file you are trying to download")
     def do_put(self, args):
-       if len(args) > 0:
+        """
+        Function tells the server to receive a file.
+        File name is given on the command line
+
+        Args:
+            param1: The name of the file
+
+        Returns:
+            Nothing.
+
+        Raises:
+            KeyError: Throws an error if there is a problem connecting
+                        to the new data socket.
+                        Throws an error if there is a problem opening
+                        the file
+        """
+        
+        if len(args) > 0:
             msg = 'put'
             filename = args
             send_data(client_socket, msg)
@@ -91,7 +173,7 @@ class ftp_command(Cmd):
                 data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 data_socket.connect((server_name,tmp_port))
                 send_data(data_socket, filename)
-                print("connection complete")
+                print("Uploading file")
                 while 1:
                     try:
                         file = open(filename, "r")
@@ -110,6 +192,20 @@ class ftp_command(Cmd):
 
        
     def do_ls(self, args):
+        """
+        Function tells the server to run the command "ls" and 
+        return its results. Prints the "ls" results from server. Will
+        not accept any commands after ls.
+
+        Args:
+            param1: None
+
+        Returns:
+            Nothing.
+
+        Raises:
+            KeyError: Throws an error for any arguments given after ls
+        """
         if len(args) == 0:
             msg = 'ls'
             send_data(client_socket, msg)
@@ -126,6 +222,18 @@ class ftp_command(Cmd):
             print("ls does not take arguments")
     
     def do_quit(self, args):
+        """
+        Function tells the server to quit the command connection
+
+        Args:
+            param1: None
+
+        Returns:
+            boolean value True
+
+        Raises:
+            KeyError: Throws an error for any argumenets given after quit
+        """
         if len(args) == 0:
             msg = 'quit'
             send_data(client_socket, msg)

@@ -12,6 +12,20 @@ import commands
 import os
 
 def send_data(sock, data):
+    """
+    Funtion formats the header to the message
+    and sends the data.
+
+    Args:
+        param1: Name of the socket to use.
+        param2: The information to be sent.
+
+    Returns:
+        TNothing.
+
+    Raises:
+        KeyError: None.
+    """
     data_size = str(len(data))
     while len(data_size) < 10:
         data_size = "0" + data_size
@@ -21,17 +35,44 @@ def send_data(sock, data):
         data_sent += sock.send(data[data_sent:])
         
 def recvAll(sock, numBytes):
-	recvBuff = ""
-	tmpBuff = ""
-	while len(recvBuff) < numBytes:
-		tmpBuff =  sock.recv(numBytes)
-		# The other side has closed the socket
-		if not tmpBuff:
-			break
-		recvBuff += tmpBuff
-	return recvBuff
+    """
+    Function receives the data from a socket.
+
+    Args:
+        param1: Name of the socket to use.
+        param2: The length of data to be received.
+
+    Returns:
+        The data received.
+
+    Raises:
+        KeyError: None.
+    """
+    recvBuff = ""
+    tmpBuff = ""
+    while len(recvBuff) < numBytes:
+        tmpBuff =  sock.recv(numBytes)
+        # The other side has closed the socket
+        if not tmpBuff:
+            break
+        recvBuff += tmpBuff
+    return recvBuff
     
 def recv(sock):
+    """
+    Fuction receives receives header information before
+    calling recvAll() to handle the data of the message. Passes
+    any header information needed to receive the message to recvAll()
+
+    Args:
+        param1: Name of the socket to use.
+
+    Returns:
+        The full message received.
+
+    Raises:
+        KeyError: None.
+    """
     data = ""
     file_size = 0	
     file_size_buff = ""
@@ -39,7 +80,20 @@ def recv(sock):
     file_size = int(file_size_buff)
     data = recvAll(sock, file_size)
     return data
+    
 def data_connection():
+    """
+    Function creates an ethereal socket
+
+    Args:
+        None.
+
+    Returns:
+        The object of an accepted socket connection.
+
+    Raises:
+        KeyError: None.
+    """
     tmp_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
     tmp_socket.bind(('',0))
     socket_number = str(tmp_socket.getsockname()[1])
@@ -67,6 +121,7 @@ print ('The server is ready to receive')
 connection_socket ,addr = server_socket.accept()
 print ('Connected by', addr)
 data =''
+
 while 1:
     try:
         exec_code = recv(connection_socket)
