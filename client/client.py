@@ -11,6 +11,7 @@ import sys
 from cmd import Cmd
 import os
 
+# ---------- FUNCTIONS --------------
 def send_data(sock, data):
     """
     Funtion formats the header to the message
@@ -27,10 +28,14 @@ def send_data(sock, data):
         KeyError: None.
     """
     data_size = str(len(data))
+    #set header to 10 bytes
     while len(data_size) < 10:
         data_size = "0" + data_size
+    
     data = data_size + data
     data_sent = 0
+
+    #ensure all data is sent
     while data_sent != len(data):
         data_sent += sock.send(data[data_sent:])
     
@@ -50,6 +55,7 @@ def recvAll(sock, numBytes):
     """
     recvBuff = ""
     tmpBuff = ""
+    # ensure all data has been recieved
     while len(recvBuff) < numBytes:
         tmpBuff =  sock.recv(numBytes)
         # The other side has closed the socket
@@ -76,9 +82,11 @@ def recv(sock):
     data = ""
     file_size = 0	
     file_size_buff = ""
+    # header size buffer
     file_size_buff = recvAll(sock, 10)
     try:
         file_size = int(file_size_buff)
+        # recieve a file given a file size
         data = recvAll(sock, file_size)
     except:
         pass
@@ -113,13 +121,16 @@ class ftp_command(Cmd):
         if len(args) > 0:
             msg = 'get'
             filename = args
+            # send get to server
             send_data(client_socket, msg)
             tmp_port = int(recv(client_socket))
             try:
+                # uses tcp to transfer data
                 data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 data_socket.connect((server_name,tmp_port))
                 send_data(data_socket, filename)
                 print("downloading file")
+                # if valid file
                 if os.path.exists(filename):
                     i = 1
                     num = "(" + str(i) + ")"
@@ -130,9 +141,8 @@ class ftp_command(Cmd):
                         i += 1
                         num = "(" + str(i) + ")"
                         filename = tmp + num + f_extension
-                
+                # open file to read and send
                 file = open(filename, "w+")
-
                 while 1:
                     tmp = recv(data_socket)
                     if not tmp:
@@ -167,6 +177,7 @@ class ftp_command(Cmd):
         if len(args) > 0:
             msg = 'put'
             filename = args
+            # send put to server
             send_data(client_socket, msg)
             tmp_port = int(recv(client_socket))
             try:
@@ -180,6 +191,7 @@ class ftp_command(Cmd):
                     except:
                         print("problem opening the file", filename)
                     try:
+                        #send at one byte at a tome
                         byte = file.read(1)
                         while byte != "":
                             send_data(data_socket, byte)
@@ -208,6 +220,7 @@ class ftp_command(Cmd):
         """
         if len(args) == 0:
             msg = 'ls'
+            # send ls command to server
             send_data(client_socket, msg)
             tmp_port = int(recv(client_socket))
             data_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -236,19 +249,27 @@ class ftp_command(Cmd):
         """
         if len(args) == 0:
             msg = 'quit'
+            # tell server to kill connection
             send_data(client_socket, msg)
             print(recv(client_socket))
             return True
         else:
             print("quit takes no arguments")
 
+
+#----------- MAIN CODE -----------------
+
+#setup arguements
 parser = argparse.ArgumentParser(description="FTP client side")
 parser.add_argument("server_name", help='Web address of server')
 parser.add_argument("port",  help="server port you wish to connecct to")
 args = parser.parse_args()
+
+# set up server name and port
 server_name = args.server_name
 server_port= args.port
 
+# check for valid port
 if server_port.isdigit():
     server_port = int(server_port)
 else:
@@ -256,13 +277,16 @@ else:
     sys.exit()
 
 try:
+    #set up socket
     print("Creating socket")
     client_socket = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
     print("Connecting to server")
     client_socket.connect((server_name,server_port))
+
     print("Setting up FTP commands")
     prompt = ftp_command()
     prompt.prompt = 'ftp> '
+     # enable client input commands
     prompt.cmdloop('FTP connection established')
 except socket.error as socketerror:
     print("FTP error: ", socketerror)
