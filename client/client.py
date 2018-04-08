@@ -11,6 +11,7 @@ import sys
 from cmd import Cmd
 import os
 
+
 # ---------- FUNCTIONS --------------
 def send_data(sock, data):
     """
@@ -150,7 +151,8 @@ class ftp_command(Cmd):
                     file.write(tmp)
                 file.close()
                 #TODO CHECK FILE HASH
-                print("File download is complete")
+                data_socket.close()
+                print("File download is complete: {}".format(filename))
             except socket.error as socketerror:
                 print("Error: ", socketerror)
             
@@ -191,14 +193,19 @@ class ftp_command(Cmd):
                     except:
                         print("problem opening the file", filename)
                     try:
-                        #send at one byte at a tome
+                        #send at one byte at a time
+                        bytesCount = 0
                         byte = file.read(1)
                         while byte != "":
                             send_data(data_socket, byte)
                             byte = file.read(1)
+                            bytesCount += 1
                     finally:
                         file.close()
+                        data_socket.close()
+                        print("File Trasfer is complete: {} {}bytes".format(filename,bytesCount))
                         break
+                        
             except socket.error as socketerror:
                 print("Error: ", socketerror)
 
@@ -231,6 +238,7 @@ class ftp_command(Cmd):
                 if not tmp:
                     break
                 print (tmp)
+            data_socket.close()
         else:
             print("ls does not take arguments")
     

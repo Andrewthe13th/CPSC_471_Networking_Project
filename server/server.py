@@ -82,7 +82,9 @@ def recv(sock):
     data = ""
     file_size = 0	
     file_size_buff = ""
+    #recieve header size
     file_size_buff = recvAll(sock, 10)
+    #initialize buffer for file
     file_size = int(file_size_buff)
 
     # recieve a file given a file size
@@ -147,10 +149,12 @@ while 1:
             for line in commands.getoutput('ls'):
                 tmp += line
             send_data(data_socket, tmp)
+            print("SUCCESS of ls cmd")
             data_socket.close()
             
         # quit command
         if exec_code == "quit":
+            print("SUCCESS of quit cmd")
             break
             
         # get command
@@ -168,6 +172,7 @@ while 1:
                     while byte != "":
                         send_data(data_socket, byte)
                         byte = file.read(1)
+                    print("SUCCESS of get cmd")
                 finally:
                     data_socket.close()
                     file.close()
@@ -176,6 +181,7 @@ while 1:
         if exec_code == "put":
             data_socket = data_connection()
             file_name = recv(data_socket)
+            print("SUCCESS of put cmd")
             try:
                 if os.path.exists(file_name):
                     i = 1
@@ -197,6 +203,7 @@ while 1:
                 print("File download is complete")
             except socket.error as socketerror:
                 print("Error: ", socketerror)
+            
             data_socket.close()
     except:
         pass
